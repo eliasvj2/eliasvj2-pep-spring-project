@@ -22,20 +22,18 @@ public class AccountService {
 
 
     public Account registerAccount(Account account){
-        if(!account.getUsername().equals("") && account.getPassword().length() >= 4 && !accountRepository.findAccountByUsername(account.getUsername()).equals(account.getUsername())     ){
+        boolean value = accountRepository.existsByUsername(account.getUsername());
+        if(!account.getUsername().equals("") && account.getPassword().length() >= 4 && value == false ){
             accountRepository.save(account);
         }
         return accountRepository.findAccountByUsername(account.getUsername());
     }
     public String accountExists(Account account){
-        Account inDatabase = accountRepository.findAccountByUsername(account.getUsername());
-        if(inDatabase != null && !inDatabase.getUsername().equals(account)){
+        boolean inDatabase = accountRepository.existsByUsername(account.getUsername());
+        if(inDatabase == false){
             return "1";
         }
-        else if(inDatabase != null && inDatabase.getUsername().equals(account)){
-            return "2";
-        }
-        return "3";
+        return "2";
     }
 
     public Account loginAccount(Account account){

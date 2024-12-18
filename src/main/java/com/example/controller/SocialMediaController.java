@@ -5,7 +5,10 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,11 +42,12 @@ public SocialMediaController(MessageService messageService, AccountService accou
 
     @PostMapping("/register")
     public ResponseEntity<Account> registerHandler(@RequestBody Account account){
-        Account addedAccount = accountService.registerAccount(account);
         String statusType = accountService.accountExists(account);
-        if(statusType.equals("1")){
+        Account addedAccount = accountService.registerAccount(account);
+        
+        if(statusType.equals("1") && addedAccount != null){
             return ResponseEntity.status(200).body(addedAccount);
-        }else if(statusType.equals("2")){
+        }else if(statusType.equals("2") && addedAccount != null){
             return ResponseEntity.status(409).build();
         }
         return ResponseEntity.status(400).build();
@@ -62,11 +66,56 @@ public SocialMediaController(MessageService messageService, AccountService accou
 
     @PostMapping("/messages")
     public ResponseEntity<Message> messageById(@RequestBody Message message){
-        Message messageId = messageService.getMessageById(message);
+        Message messageId = messageService.postMessage(message);
         if(messageId != null){
             return ResponseEntity.status(200).body(messageId);
         }
         return ResponseEntity.status(400).build(); 
+    }
+
+    @GetMapping("/messages/{messageId}")
+    public ResponseEntity<Message> getMessageHandler(@PathVariable Integer messageId){
+        Message receivedMessage = messageService.getMessageById(messageId);
+
+        return ResponseEntity.status(200).body(receivedMessage);
+
+    }
+
+    @DeleteMapping("/messages/{messageId}")
+    public ResponseEntity<String> deleteMessageHandler(@PathVariable Integer messageId){
+        Message receivedMessage = messageService.deleteMessageById(messageId);
+        if(receivedMessage != null){
+            return ResponseEntity.status(200).body("1");
+        }
+
+        return ResponseEntity.status(200).build();
+
+    }
+
+    @GetMapping("/accounts/{accountId}/messages")
+    public ResponseEntity<List<Message>> getMessagesByUserHandler(@PathVariable Integer accountId){
+        List<Message> messages = messageService.getMessagesByUser(accountId);
+        return ResponseEntity.status(200).body(messages);
+    }
+
+    @PatchMapping("/messages/{messageId}")
+    public ResponseEntity<String> updateMessageHandler(@PathVariable Integer messageId, @RequestBody Message message){
+        message.setMessageId(messageId);
+
+        
+            Message updatedMessage = messageService.updateMessageById(message);
+
+            if(updatedMessage != null){
+
+            System.out.println(updatedMessage);
+            return ResponseEntity.status(200).body("1");}
+            else{
+                return ResponseEntity.status(400).build();
+        
+            }
+       
+            
+        
     }
 
 }
